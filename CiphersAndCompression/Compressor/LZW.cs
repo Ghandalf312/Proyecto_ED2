@@ -5,7 +5,7 @@ using System.Linq;
 using System;
 using System.Threading.Tasks;
 
-namespace SecurityAndCompression.Compressors
+namespace CiphersAndCompression.Compressor
 {
     public class LZW : ICompressor
     {
