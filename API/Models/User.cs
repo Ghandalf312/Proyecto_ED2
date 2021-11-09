@@ -30,7 +30,7 @@ namespace API.Models
             }
             PublicKey = SDES.GetPublicKey(SecretNumber);
             var cipher = new SDES();
-            Password = cipher.EncryptString(password, password.Length.ToString());
+            Password = cipher.EncryptString(password, password.Length);
         }
         public static bool CheckValidness(User user)
         {
