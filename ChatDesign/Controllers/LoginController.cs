@@ -16,7 +16,7 @@ namespace ChatDesign.Controllers
         public LoginController()
         {
             Singleton.Instance().EnvironmentPath = Environment.CurrentDirectory;
-            Singleton.Instance().APIClient = new HttpClient() { BaseAddress = new Uri("http://localhost:50489/api/") };
+            Singleton.Instance().APIClient = new HttpClient() { BaseAddress = new Uri("https://localhost:44335/api/") };
             Singleton.Instance().APIClient.DefaultRequestHeaders.Clear();
             Singleton.Instance().APIClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
         }

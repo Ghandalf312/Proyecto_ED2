@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace API.Controllers
 {
-    [Route("api/")]
+    [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -30,7 +30,7 @@ namespace API.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(User user)
+        public ActionResult<User> Create(User user)
         {
             _userService.Create(user);
 
