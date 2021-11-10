@@ -7,6 +7,9 @@ using API.Models;
 using ChatDesign.Helpers;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http;
+using ChatDesign.Models;
+using CiphersAndCompression.Ciphers;
+using System.Net.Http;
 
 namespace ChatDesign.Controllers
 {
@@ -20,7 +23,49 @@ namespace ChatDesign.Controllers
         }
         public ActionResult Chat(string receiver)
         {
-            return View();
+            if (receiver != null)
+            {
+                HttpContext.Session.SetString("CurrentReceiver", receiver);
+            }
+            else
+            {
+                receiver = HttpContext.Session.GetString("CurrentReceiver");
+            }
+            var messages = GetMessages(HttpContext.Session.GetString("CurrentUser"), receiver, false);
+            var files = GetMessages(HttpContext.Session.GetString("CurrentUser"), receiver, true);
+            var conversation = new Conversation(messages, files, receiver);
+            return View(conversation);
+        }
+        [HttpPost]
+        public async Task<ActionResult> Chat(IFormCollection collection)
+        {
+            try
+            {
+                var message = collection["Message"];
+                if (message == string.Empty)
+                {
+                    ViewBag.ErrorMessage = "Coloque el parámetro a buscar";
+                    return RedirectToAction("Chat");
+                }
+                var currentUser = HttpContext.Session.GetString("CurrentUser");
+                var receiver = HttpContext.Session.GetString("CurrentReceiver");
+                var SDESKey = SDES.GetSecretKey(GetUserSecretNumber(currentUser), GetUserPublicKey(receiver));
+                var cipher = new SDES();
+                var cipheredMessage = cipher.EncryptString(message, SDESKey);
+                var messageForUpload = new Message()
+                {
+                    Receiver = receiver,
+                    IsFile = false,
+                    Sender = currentUser,
+                    Text = cipheredMessage
+                };
+                await Singleton.Instance().APIClient.PostAsJsonAsync("Chat", messageForUpload);
+                return RedirectToAction("Chat");
+            }
+            catch
+            {
+                return RedirectToAction("Chat");
+            }
         }
         private List<User> GetUsers()
         {
@@ -39,9 +84,76 @@ namespace ChatDesign.Controllers
                 return new List<User>();
             }
         }
+        private int GetUserPublicKey(string username)
+        {
+            try
+            {
+                var user = GetUsers().FirstOrDefault(user => user.Username == username);
+                return user.PublicKey;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+        private int GetUserSecretNumber(string username)
+        {
+            try
+            {
+                var user = GetUsers().FirstOrDefault(user => user.Username == username);
+                return user.SecretNumber;
+            }
+            catch
+            {
+                return 0;
+            }
+        }
         private List<Message> GetMessages(string currentUser, string receiver, bool isFile)
         {
-            return new List<Message>();
+            try
+            {
+                var messages = new List<Message>();
+                var response = Singleton.Instance().APIClient.GetAsync("Chat").Result;
+                if (response.IsSuccessStatusCode)
+                {
+                    var messageList = JsonConvert.DeserializeObject<List<Message>>(response.Content.ReadAsStringAsync().Result);
+                    var conversationMessages = new List<Message>();
+                    if (isFile)
+                    {
+                        conversationMessages = messageList.Where(m => ((m.Sender == currentUser && m.Receiver == receiver) || (m.Sender == receiver && m.Receiver == currentUser)) && m.IsFile).ToList();
+                    }
+                    else
+                    {
+                        conversationMessages = messageList.Where(m => ((m.Sender == currentUser && m.Receiver == receiver) || (m.Sender == receiver && m.Receiver == currentUser)) && !m.IsFile).ToList();
+                    }
+
+                    if (conversationMessages.Count != 0 && !isFile)
+                    {
+                        var SDESKey = SDES.GetSecretKey(GetUserSecretNumber(currentUser), GetUserPublicKey(receiver));
+                        var cipher = new SDES();
+                        foreach (var message in conversationMessages)
+                        {
+                            message.Text = cipher.DecryptString(message.Text, SDESKey);
+                        }
+                        return conversationMessages;
+                    }
+                    else if (conversationMessages.Count != 0)
+                    {
+                        var SDESKey = SDES.GetSecretKey(GetUserSecretNumber(currentUser), GetUserPublicKey(receiver));
+                        var cipher = new SDES();
+                        foreach (var message in conversationMessages)
+                        {
+                            message.Text = cipher.DecryptString(message.Text, SDESKey);
+                        }
+                        return conversationMessages;
+                    }
+                }
+                return new List<Message>();
+            }
+            catch
+            {
+                return new List<Message>();
+            }
         }
     }
 }
