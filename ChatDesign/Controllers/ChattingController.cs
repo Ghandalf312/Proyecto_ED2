@@ -18,7 +18,10 @@ namespace ChatDesign.Controllers
             return View(listOfUsers);
             
         }
-
+        public ActionResult Chat(string receiver)
+        {
+            return View();
+        }
         private List<User> GetUsers()
         {
             try
@@ -35,6 +38,10 @@ namespace ChatDesign.Controllers
             {
                 return new List<User>();
             }
+        }
+        private List<Message> GetMessages(string currentUser, string receiver, bool isFile)
+        {
+            return new List<Message>();
         }
     }
 }
