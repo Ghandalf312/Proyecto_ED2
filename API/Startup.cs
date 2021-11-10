@@ -25,7 +25,9 @@ namespace API
             services.Configure<UserDbSettings>(Configuration.GetSection(nameof(UserDbSettings)));
             services.AddSingleton<IUserDbSettings>(sp => sp.GetRequiredService<IOptions<UserDbSettings>>().Value);
             services.AddSingleton<UserService>();
-
+            services.Configure<ChatDbSettings>(Configuration.GetSection(nameof(ChatDbSettings)));
+            services.AddSingleton<IChatDbSettings>(sp => sp.GetRequiredService<IOptions<ChatDbSettings>>().Value);
+            services.AddSingleton<ChatService>();
             services.AddControllers();
         }
 
