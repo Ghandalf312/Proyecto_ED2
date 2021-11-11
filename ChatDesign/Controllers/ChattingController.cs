@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Http;
 using ChatDesign.Models;
 using CiphersAndCompression.Ciphers;
 using System.Net.Http;
+using CiphersAndCompression.Compressor;
+using System.IO;
 
 namespace ChatDesign.Controllers
 {
@@ -61,6 +63,65 @@ namespace ChatDesign.Controllers
                 };
                 await Singleton.Instance().APIClient.PostAsJsonAsync("Chat", messageForUpload);
                 return RedirectToAction("Chat");
+            }
+            catch
+            {
+                return RedirectToAction("Chat");
+            }
+        }
+        [HttpPost]
+        public async Task<ActionResult> UploadFileAsync(IFormFile file)
+        {
+            try
+            {
+                if (file == null)
+                {
+                    ViewBag.ErrorMessage = "Seleccione un archivo antes de enviar.";
+                    return RedirectToAction("Chat");
+                }
+                var currentUser = HttpContext.Session.GetString("CurrentUser");
+                var receiver = HttpContext.Session.GetString("CurrentReceiver");
+                var savedFileRoute = await FileManager.SaveFileAsync(file, Singleton.Instance().EnvironmentPath, false);
+                var compressor = new LZW();
+                var compressedFilePath = compressor.CompressFile(Singleton.Instance().EnvironmentPath, savedFileRoute, Path.GetFileName(savedFileRoute));
+                var fileStream = System.IO.File.OpenRead(compressedFilePath);
+                var multiForm = new MultipartFormDataContent
+                {
+                    { new StreamContent(fileStream), "file", Path.GetFileName(compressedFilePath) }
+                };
+                var response = await Singleton.Instance().APIClient.PostAsync("File", multiForm);
+                var fileNameInAPI = await response.Content.ReadAsStringAsync();
+                fileNameInAPI = fileNameInAPI.Remove(0, 1);
+                fileNameInAPI = fileNameInAPI.Remove(fileNameInAPI.Length - 1, 1);
+                var SDESKey = SDES.GetSecretKey(GetUserSecretNumber(currentUser), GetUserPublicKey(receiver));
+                var cipher = new SDES();
+                var cipheredMessage = cipher.EncryptString(fileNameInAPI, SDESKey);
+                var pathMessage = new Message() { Text = cipheredMessage, IsFile = true, Sender = currentUser, Receiver = receiver };
+                await Singleton.Instance().APIClient.PostAsJsonAsync("Chat", pathMessage);
+                return RedirectToAction("Chat");
+            }
+            catch
+            {
+                return RedirectToAction("Chat");
+            }
+        }
+
+        [Route("DownloadFile")]
+        public async Task<ActionResult> DownloadFileAsync(string message)
+        {
+            try
+            {
+                var currentUser = HttpContext.Session.GetString("CurrentUser");
+                var receiver = HttpContext.Session.GetString("CurrentReceiver");
+                var newMessage = new Message() { Text = message };
+                var result = await Singleton.Instance().APIClient.PostAsJsonAsync("File/GetFile", newMessage);
+                var fileForDownloading = await result.Content.ReadAsStreamAsync();
+                var route = await FileManager.SaveDownloadedStream(fileForDownloading, Singleton.Instance().EnvironmentPath, newMessage.Text);
+                var decompressor = new LZW();
+                var decompressedFilePath = decompressor.DecompressFile(Singleton.Instance().EnvironmentPath, route, message);
+                decompressedFilePath = Path.GetFullPath(decompressedFilePath);
+                var fileArray = System.IO.File.ReadAllBytes(decompressedFilePath);
+                return File(fileArray, "text/plain", message);
             }
             catch
             {
