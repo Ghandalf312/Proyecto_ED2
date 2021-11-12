@@ -17,6 +17,7 @@ namespace ChatDesign.Controllers
 {
     public class ChattingController : Controller
     {
+
         public ActionResult Index()
         {
             var listOfUsers = GetUsers().Where(user => user.Username != HttpContext.Session.GetString("CurrentUser"));
@@ -128,6 +129,26 @@ namespace ChatDesign.Controllers
                 return RedirectToAction("Chat");
             }
         }
+
+        public ActionResult SearchMessages(string receiver, string searchedValue)
+        {
+            if (receiver != null)
+            {
+                HttpContext.Session.SetString("CurrentReceiver", receiver);
+            }
+            else
+            {
+                receiver = HttpContext.Session.GetString("CurrentReceiver");
+            }
+            var searchedMessages = GetMessages(HttpContext.Session.GetString("CurrentUser"), receiver, false);
+            searchedMessages = searchedMessages.Where(message => message.Text.Contains(searchedValue)).ToList();
+            var conversation = new Conversation(searchedMessages, receiver, searchedValue);
+            return View(conversation);
+        }
+
+
+
+
         private List<User> GetUsers()
         {
             try
