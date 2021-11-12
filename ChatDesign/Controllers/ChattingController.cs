@@ -146,7 +146,25 @@ namespace ChatDesign.Controllers
             return View(conversation);
         }
 
-
+        [HttpPost]
+        public ActionResult SearchMessages(IFormCollection collection)
+        {
+            try
+            {
+                var searched = collection["SearchedValue"];
+                if (searched == string.Empty)
+                {
+                    ViewBag.ErrorMessage = "Coloque el parámetro a buscar";
+                    return RedirectToAction("Chat");
+                }
+                var receiverUser = HttpContext.Session.GetString("CurrentReceiver");
+                return RedirectToAction("SearchMessages", new { receiver = receiverUser, searchedValue = searched });
+            }
+            catch
+            {
+                return RedirectToAction("Chat");
+            }
+        }
 
 
         private List<User> GetUsers()
