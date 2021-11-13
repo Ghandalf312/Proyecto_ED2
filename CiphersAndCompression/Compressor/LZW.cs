@@ -273,7 +273,7 @@ namespace CiphersAndCompression.Compressor
             using var readingFile = new FileStream(filePath, FileMode.Open);
 
             using var reader = new BinaryReader(readingFile);
-            int bufferSize = 2000;
+            int bufferSize = 100000;
             var buffer = new byte[bufferSize];
             readingFile.Position = readingFile.Seek(0, SeekOrigin.Begin);
             buffer = reader.ReadBytes(bufferSize);
