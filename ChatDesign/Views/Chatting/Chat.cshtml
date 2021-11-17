@@ -3,6 +3,8 @@
 <br />
 <h2 style="text-align:center">@Html.DisplayFor(model => model.Receiver)</h2>
 <br />
+<div style="text-align:right">@Html.ActionLink("Regresar", "Index")</div>
+<br />
 @using (Html.BeginForm("SearchMessages", "Chatting", FormMethod.Post))
 {
     <form>
@@ -14,7 +16,6 @@
             <label style="color:red">@ViewBag.ErrorMessage</label>
         </div>
         <button type="submit" class="btn btn-primary">Buscar mensaje</button>
-        <div></div>
     </form>}
 <br />
 @using (Html.BeginForm("Chat", "Chatting", FormMethod.Post))
@@ -34,20 +35,28 @@
         <ul>
             @foreach (var item in Model.Messages)
             {
-                @if (item.OnlySender == false)
+                @if (item.OnlySender == false && item.Sender == Model.CurrentUser)
                 {
                     <li>
                         <strong>@Html.DisplayFor(modelItem => item.Sender):  </strong>
                         @Html.DisplayTextFor(modelItem => item.Text)
-                        <span>@Html.ActionLink("Borrar Mensaje", "DeleteMessage", "Chatting", new { messageToDelete = item.Text, receiver = Model.Receiver })</span>
+                        <span>@Html.ActionLink("Borrar para mi | ", "DeleteMessage", "Chatting", new { messageToDelete = item.Text, receiver = Model.Receiver })</span>
+                        <span>@Html.ActionLink("Borrar para todos", "DeleteMessageDb", "Chatting", new { messageToDelete = item.Text, id = item.Id })</span>
                     </li>
                 }
-                else if (item.Sender == Model.CurrentUser)
+                else if (item.OnlySender == false && item.Sender == Model.Receiver)
                 {
                     <li>
                         <strong>@Html.DisplayFor(modelItem => item.Sender):  </strong>
                         @Html.DisplayTextFor(modelItem => item.Text)
-                        <span>@Html.ActionLink("Borrar Mensaje", "DeleteMessage", "Chatting", new { messageToDelete = item.Text, receiver = Model.Receiver })</span>
+
+                    </li>
+                }
+                else if (item.Sender == Model.Receiver)
+                {
+                    <li>
+                        <strong>@Html.DisplayFor(modelItem => item.Sender):  </strong>
+                        @Html.DisplayTextFor(modelItem => item.Text)
                     </li>
                 }
             }
