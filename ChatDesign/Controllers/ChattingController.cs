@@ -62,7 +62,8 @@ namespace ChatDesign.Controllers
                     IsFile = false,
                     Sender = currentUser,
                     Text = cipheredMessage,
-                    OnlySender = false
+                    OnlySender = false,
+                    ForAll = false
                 };
                 await Singleton.Instance().APIClient.PostAsJsonAsync("Chat", messageForUpload);
                 return RedirectToAction("Chat");
@@ -99,7 +100,7 @@ namespace ChatDesign.Controllers
                 var SDESKey = SDES.GetSecretKey(GetUserSecretNumber(currentUser), GetUserPublicKey(receiver));
                 var cipher = new SDES();
                 var cipheredMessage = cipher.EncryptString(fileNameInAPI, SDESKey);
-                var pathMessage = new Message() { Text = cipheredMessage, IsFile = true, Sender = currentUser, Receiver = receiver, OnlySender = false };
+                var pathMessage = new Message() { Text = cipheredMessage, IsFile = true, Sender = currentUser, Receiver = receiver, OnlySender = false, ForAll = false };
                 await Singleton.Instance().APIClient.PostAsJsonAsync("Chat", pathMessage);
                 return RedirectToAction("Chat");
             }
@@ -180,16 +181,17 @@ namespace ChatDesign.Controllers
                 {
                     if (messageToDelete == message.Text)
                     {
-                        var messageForUpload = new Message()
+                        var messageForUpdate = new Message()
                         {
                             Id = message.Id,
                             Receiver = receiver,
                             IsFile = false,
                             Sender = sender,
                             Text = cipher.EncryptString(message.Text, SDESKey),
-                            OnlySender = true
+                            OnlySender = true,
+                            ForAll = false
                         };
-                        Singleton.Instance().APIClient.PutAsJsonAsync("Chat", messageForUpload);
+                        Singleton.Instance().APIClient.PutAsJsonAsync("Chat", messageForUpdate);
                     }
                 }
                 return RedirectToAction("Chat");
@@ -212,16 +214,18 @@ namespace ChatDesign.Controllers
                 {
                     if (messageToDelete == message.Text)
                     {
-                        var messageForUpload = new Message()
+                        var messageForUpdate = new Message()
                         {
                             Id = message.Id,
                             Receiver = receiver,
                             IsFile = false,
                             Sender = sender,
                             Text = cipher.EncryptString(message.Text, SDESKey),
-                            OnlySender = true
+                            OnlySender = false,
+                            ForAll = true
                         };
-                        //Eliminar para todos
+                        Singleton.Instance().APIClient.PutAsJsonAsync("Chat", messageForUpdate);
+                        //Singleton.Instance().APIClient.DeleteAsync("Chat");
                     }
                 }
                 return RedirectToAction("Chat");

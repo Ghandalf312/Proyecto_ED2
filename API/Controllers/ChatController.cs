@@ -55,10 +55,11 @@ namespace API.Controllers
             return NoContent();
         }
 
-        [HttpDelete("{id:length(24)}")]
-        public IActionResult Delete(string id)
+        //[HttpDelete("{id:length(24)}")]
+        [HttpDelete]
+        public ActionResult<Message> Delete(Message messageIn)
         {
-            var message = _chatService.Get(id);
+            var message = _chatService.Get(messageIn.Id);
 
             if (message == null) return NotFound();
 

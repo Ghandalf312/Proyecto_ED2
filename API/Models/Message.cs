@@ -16,5 +16,6 @@ namespace API.Models
         public string Receiver { get; set; }
         public bool IsFile { get; set; }
         public bool OnlySender { get; set; }
+        public bool ForAll { get; set; }
     }
 }

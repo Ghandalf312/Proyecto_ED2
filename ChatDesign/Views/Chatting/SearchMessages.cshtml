@@ -11,10 +11,18 @@
 <ul>
     @foreach (var item in Model.Messages)
     {
-<li>
-    <strong>@Html.DisplayFor(modelItem => item.Sender):  </strong>
-    @Html.DisplayTextFor(modelItem => item.Text)
-</li>}
+        @if (item.OnlySender == true && item.Sender != Model.Receiver)
+        {
+
+        }
+        else if (item.ForAll == false)
+        {
+            <li>
+                <strong>@Html.DisplayFor(modelItem => item.Sender):  </strong>
+                @Html.DisplayTextFor(modelItem => item.Text)
+            </li>
+        }
+    }
 </ul>
 
 

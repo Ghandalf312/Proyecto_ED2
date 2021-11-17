@@ -35,7 +35,13 @@
         <ul>
             @foreach (var item in Model.Messages)
             {
-                @if (item.OnlySender == false && item.Sender == Model.CurrentUser)
+                @if (item.ForAll == true)
+                {
+                    <li>
+                        <span><strong><em>Se ha eliminado este mensaje.</em></strong></span>
+                    </li>
+                }
+                else if (item.OnlySender == false && item.Sender == Model.CurrentUser)
                 {
                     <li>
                         <strong>@Html.DisplayFor(modelItem => item.Sender):  </strong>
@@ -52,11 +58,17 @@
 
                     </li>
                 }
-                else if (item.Sender == Model.Receiver)
+                else if (item.OnlySender == true && item.Sender == Model.Receiver)
                 {
                     <li>
                         <strong>@Html.DisplayFor(modelItem => item.Sender):  </strong>
                         @Html.DisplayTextFor(modelItem => item.Text)
+                    </li>
+                }
+                else if (item.OnlySender == true && item.Sender == Model.CurrentUser)
+                {
+                    <li>
+                        <span><strong><em>Eliminaste este mensaje.</em></strong></span>
                     </li>
                 }
             }
