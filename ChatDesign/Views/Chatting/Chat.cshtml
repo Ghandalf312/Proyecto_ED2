@@ -34,10 +34,23 @@
         <ul>
             @foreach (var item in Model.Messages)
             {
-                <li>
-                    <strong>@Html.DisplayFor(modelItem => item.Sender):  </strong>
-                    @Html.DisplayTextFor(modelItem => item.Text)
-                </li>            }
+                @if (item.OnlySender == false)
+                {
+                    <li>
+                        <strong>@Html.DisplayFor(modelItem => item.Sender):  </strong>
+                        @Html.DisplayTextFor(modelItem => item.Text)
+                        <span>@Html.ActionLink("Borrar Mensaje", "DeleteMessage", "Chatting", new { messageToDelete = item.Text, receiver = Model.Receiver })</span>
+                    </li>
+                }
+                else if (item.Sender == Model.CurrentUser)
+                {
+                    <li>
+                        <strong>@Html.DisplayFor(modelItem => item.Sender):  </strong>
+                        @Html.DisplayTextFor(modelItem => item.Text)
+                        <span>@Html.ActionLink("Borrar Mensaje", "DeleteMessage", "Chatting", new { messageToDelete = item.Text, receiver = Model.Receiver })</span>
+                    </li>
+                }
+            }
         </ul>
     </li>
     <li class="list-group-item flex-fill">

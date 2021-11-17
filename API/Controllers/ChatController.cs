@@ -42,14 +42,15 @@ namespace API.Controllers
         }
 
 
-        [HttpPut("{id:length(24)}")]
-        public IActionResult Update(string id, Message messageIn)
+        //[HttpPut("{id:length(24)}")]
+        [HttpPut]
+        public ActionResult<Message> Update(Message messageIn)
         {
-            var message = _chatService.Get(id);
+            var message = _chatService.Get(messageIn.Id);
 
             if (message == null) return NotFound();
 
-            _chatService.Update(id, messageIn);
+            _chatService.Update(messageIn.Id, messageIn);
 
             return NoContent();
         }

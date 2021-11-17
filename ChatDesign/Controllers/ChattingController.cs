@@ -34,9 +34,10 @@ namespace ChatDesign.Controllers
             {
                 receiver = HttpContext.Session.GetString("CurrentReceiver");
             }
+            var currentUser = HttpContext.Session.GetString("CurrentUser");
             var messages = GetMessages(HttpContext.Session.GetString("CurrentUser"), receiver, false);
             var files = GetMessages(HttpContext.Session.GetString("CurrentUser"), receiver, true);
-            var conversation = new Conversation(messages, files, receiver);
+            var conversation = new Conversation(messages, files, currentUser, receiver);
             return View(conversation);
         }
         [HttpPost]
@@ -60,7 +61,8 @@ namespace ChatDesign.Controllers
                     Receiver = receiver,
                     IsFile = false,
                     Sender = currentUser,
-                    Text = cipheredMessage
+                    Text = cipheredMessage,
+                    OnlySender = false
                 };
                 await Singleton.Instance().APIClient.PostAsJsonAsync("Chat", messageForUpload);
                 return RedirectToAction("Chat");
@@ -97,7 +99,7 @@ namespace ChatDesign.Controllers
                 var SDESKey = SDES.GetSecretKey(GetUserSecretNumber(currentUser), GetUserPublicKey(receiver));
                 var cipher = new SDES();
                 var cipheredMessage = cipher.EncryptString(fileNameInAPI, SDESKey);
-                var pathMessage = new Message() { Text = cipheredMessage, IsFile = true, Sender = currentUser, Receiver = receiver };
+                var pathMessage = new Message() { Text = cipheredMessage, IsFile = true, Sender = currentUser, Receiver = receiver, OnlySender = false };
                 await Singleton.Instance().APIClient.PostAsJsonAsync("Chat", pathMessage);
                 return RedirectToAction("Chat");
             }
@@ -166,6 +168,37 @@ namespace ChatDesign.Controllers
             }
         }
 
+        public ActionResult DeleteMessage(string messageToDelete, string receiver)
+        {
+            try
+            {
+                var sender = HttpContext.Session.GetString("CurrentUser");
+                var messages = GetMessages(sender, receiver, false);
+                var SDESKey = SDES.GetSecretKey(GetUserSecretNumber(sender), GetUserPublicKey(receiver));
+                var cipher = new SDES();
+                foreach (var message in messages)
+                {
+                    if (messageToDelete == message.Text)
+                    {
+                        var messageForUpload = new Message()
+                        {
+                            Id = message.Id,
+                            Receiver = receiver,
+                            IsFile = false,
+                            Sender = sender,
+                            Text = cipher.EncryptString(message.Text, SDESKey),
+                            OnlySender = true
+                        };
+                        Singleton.Instance().APIClient.PutAsJsonAsync("Chat", messageForUpload);
+                    }
+                }
+                return RedirectToAction("Chat");
+            }
+            catch
+            {
+                return RedirectToAction("Chat");
+            }
+        }
 
         private List<User> GetUsers()
         {

@@ -10,11 +10,12 @@ namespace ChatDesign.Models
     {
         public List<Message> Messages { get; set; }
         public string Receiver { get; set; }
+        public string CurrentUser { get; set; }
         public List<Message> Files { get; set; }
 
         public string SearchedMessage { get; set; }
 
-        public Conversation(List<Message> messages, List<Message> files, string receiver)
+        public Conversation(List<Message> messages, List<Message> files, string receiver, string currentuser)
         {
             if (messages == null)
             {
@@ -33,6 +34,7 @@ namespace ChatDesign.Models
                 Files = files;
             }
             Receiver = receiver;
+            CurrentUser = currentuser;
         }
 
         public Conversation(List<Message> messages, string receiver, string searched)
