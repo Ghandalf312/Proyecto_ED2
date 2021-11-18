@@ -24,6 +24,12 @@ namespace ChatDesign.Controllers
             return View(listOfUsers);
             
         }
+        public ActionResult SearchUser()
+        {
+            var listOfUsers = GetUsers().Where(user => user.Username != HttpContext.Session.GetString("CurrentUser"));
+            return View(listOfUsers);
+
+        }
         public ActionResult Chat(string receiver)
         {
             if (receiver != null)
