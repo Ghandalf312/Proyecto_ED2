@@ -14,7 +14,6 @@ namespace API.Models
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
-        
         public string Receiver { get; set; }
         public string Invitation { get; set; }
         public bool isActive { get; set; }

@@ -231,7 +231,6 @@ namespace ChatDesign.Controllers
                             ForAll = true
                         };
                         Singleton.Instance().APIClient.PutAsJsonAsync("Chat", messageForUpdate);
-                        //Singleton.Instance().APIClient.DeleteAsync("Chat");
                     }
                 }
                 return RedirectToAction("Chat");

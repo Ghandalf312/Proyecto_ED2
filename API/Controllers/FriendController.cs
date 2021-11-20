@@ -25,7 +25,7 @@ namespace API.Controllers
         [HttpGet]
         public ActionResult<List<Friend>> Get() => _chatService.Get();
 
-        [HttpGet("{id:length(24)}", Name = "GetMessage")]
+        [HttpGet("{id:length(24)}", Name = "GetFriend")]
         public ActionResult<Friend> Get(string id)
         {
             var message = _chatService.Get(id);
@@ -40,7 +40,7 @@ namespace API.Controllers
         {
             _chatService.Create(message);
 
-            return CreatedAtRoute("GetMessage", new { id = message.Id.ToString() }, message);
+            return CreatedAtRoute("GetFriend", new { id = message.Id.ToString() }, message);
         }
 
 
