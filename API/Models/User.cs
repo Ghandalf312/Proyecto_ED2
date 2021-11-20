@@ -28,7 +28,7 @@ namespace API.Models
             {
                 SecretNumber = new Random().Next(0, 502);
             }
-            PublicKey = SDES.GetPublicKey(SecretNumber);
+            PublicKey = DiffieHellman.GetPublicKey(SecretNumber);
             var cipher = new SDES();
             Password = cipher.EncryptString(password, password.Length);
         }

@@ -59,7 +59,7 @@ namespace ChatDesign.Controllers
                 }
                 var currentUser = HttpContext.Session.GetString("CurrentUser");
                 var receiver = HttpContext.Session.GetString("CurrentReceiver");
-                var SDESKey = SDES.GetSecretKey(GetUserSecretNumber(currentUser), GetUserPublicKey(receiver));
+                var SDESKey = DiffieHellman.GetSecretKey(GetUserSecretNumber(currentUser), GetUserPublicKey(receiver));
                 var cipher = new SDES();
                 var cipheredMessage = cipher.EncryptString(message, SDESKey);
                 var messageForUpload = new Message()
@@ -103,7 +103,7 @@ namespace ChatDesign.Controllers
                 var fileNameInAPI = await response.Content.ReadAsStringAsync();
                 fileNameInAPI = fileNameInAPI.Remove(0, 1);
                 fileNameInAPI = fileNameInAPI.Remove(fileNameInAPI.Length - 1, 1);
-                var SDESKey = SDES.GetSecretKey(GetUserSecretNumber(currentUser), GetUserPublicKey(receiver));
+                var SDESKey = DiffieHellman.GetSecretKey(GetUserSecretNumber(currentUser), GetUserPublicKey(receiver));
                 var cipher = new SDES();
                 var cipheredMessage = cipher.EncryptString(fileNameInAPI, SDESKey);
                 var pathMessage = new Message() { Text = cipheredMessage, IsFile = true, Sender = currentUser, Receiver = receiver, OnlySender = false, ForAll = false };
@@ -181,7 +181,7 @@ namespace ChatDesign.Controllers
             {
                 var sender = HttpContext.Session.GetString("CurrentUser");
                 var messages = GetMessages(sender, receiver, false);
-                var SDESKey = SDES.GetSecretKey(GetUserSecretNumber(sender), GetUserPublicKey(receiver));
+                var SDESKey = DiffieHellman.GetSecretKey(GetUserSecretNumber(sender), GetUserPublicKey(receiver));
                 var cipher = new SDES();
                 foreach (var message in messages)
                 {
@@ -214,7 +214,7 @@ namespace ChatDesign.Controllers
                 var sender = HttpContext.Session.GetString("CurrentUser");
                 var receiver = HttpContext.Session.GetString("CurrentReceiver");
                 var messages = GetMessages(sender, receiver, false);
-                var SDESKey = SDES.GetSecretKey(GetUserSecretNumber(sender), GetUserPublicKey(receiver));
+                var SDESKey = DiffieHellman.GetSecretKey(GetUserSecretNumber(sender), GetUserPublicKey(receiver));
                 var cipher = new SDES();
                 foreach (var message in messages)
                 {
@@ -303,7 +303,7 @@ namespace ChatDesign.Controllers
 
                     if (conversationMessages.Count != 0 && !isFile)
                     {
-                        var SDESKey = SDES.GetSecretKey(GetUserSecretNumber(currentUser), GetUserPublicKey(receiver));
+                        var SDESKey = DiffieHellman.GetSecretKey(GetUserSecretNumber(currentUser), GetUserPublicKey(receiver));
                         var cipher = new SDES();
                         foreach (var message in conversationMessages)
                         {
@@ -313,7 +313,7 @@ namespace ChatDesign.Controllers
                     }
                     else if (conversationMessages.Count != 0)
                     {
-                        var SDESKey = SDES.GetSecretKey(GetUserSecretNumber(currentUser), GetUserPublicKey(receiver));
+                        var SDESKey = DiffieHellman.GetSecretKey(GetUserSecretNumber(currentUser), GetUserPublicKey(receiver));
                         var cipher = new SDES();
                         foreach (var message in conversationMessages)
                         {

@@ -1,2 +1,0 @@
-ngrok http [port] -host-header="localhost:[port]"
-ngrok http 47605 -host-header="localhost:47605"
